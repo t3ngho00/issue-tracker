@@ -30,7 +30,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner"
+import { toast } from "sonner";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createIssueSchema } from "@/app/validationSchemas";
+import { z } from "zod";
+import { ErrorMessage } from "@/components/ErrorMessage";
+
+type IssueForm = z.infer<typeof createIssueSchema>;
 const editorConfig: InitialConfigType = {
   namespace: "Editor",
   theme: editorTheme,
@@ -152,18 +158,16 @@ function Plugins() {
   );
 }
 
-interface IssueForm {
-  title: string;
-  description: string;
-}
-
 export default function NewIssuePage() {
   const {
     register,
     control,
     handleSubmit,
-    formState: { isSubmitting },
-  } = useForm<IssueForm>();
+    formState: { isSubmitting, errors },
+  } = useForm<IssueForm>({
+    resolver: zodResolver(createIssueSchema),
+    defaultValues: { title: "", description: "" },
+  });
   const router = useRouter();
   const onSubmit = async (data: IssueForm) => {
     try {
@@ -191,7 +195,7 @@ export default function NewIssuePage() {
             className="text-lg"
           />
         </div>
-
+        {errors.title && <ErrorMessage>{errors.title.message}</ErrorMessage>}
         <div className="space-y-2">
           <Label className="text-sm font-medium">Description</Label>
           <Controller
@@ -206,6 +210,9 @@ export default function NewIssuePage() {
             )}
           />
         </div>
+        {errors.description && (
+          <ErrorMessage>{errors.description.message}</ErrorMessage>
+        )}
 
         <div className="flex gap-4 pt-4">
           <Button type="submit" className="px-6" disabled={isSubmitting}>
