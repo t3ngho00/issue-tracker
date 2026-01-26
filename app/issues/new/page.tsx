@@ -30,7 +30,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-
+import { toast } from "sonner"
 const editorConfig: InitialConfigType = {
   namespace: "Editor",
   theme: editorTheme,
@@ -147,7 +147,6 @@ function Plugins() {
         <ListPlugin />
         <LinkPlugin />
         <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-        {/* rest of the plugins */}
       </div>
     </div>
   );
@@ -157,22 +156,22 @@ interface IssueForm {
   title: string;
   description: string;
 }
+
 export default function NewIssuePage() {
   const {
     register,
     control,
     handleSubmit,
-    reset,
     formState: { isSubmitting },
   } = useForm<IssueForm>();
   const router = useRouter();
   const onSubmit = async (data: IssueForm) => {
     try {
-      const response = await axios.post("/api/issues/new", data);
+      await axios.post("/api/issues/new", data);
       router.push("/issues");
     } catch (error) {
       console.error("Error creating issue:", error);
-      alert("Failed to create issue. Please try again.");
+      toast.error("Failed to create issue. Please try again.");
     }
   };
 
