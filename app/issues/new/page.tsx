@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import axios from "axios";
+import { useEffect } from "react";
 import {
   InitialConfigType,
   LexicalComposer,
 } from "@lexical/react/LexicalComposer";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
@@ -12,7 +15,7 @@ import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { ListNode, ListItemNode } from "@lexical/list";
 import { LinkNode } from "@lexical/link";
 import { CodeNode } from "@lexical/code";
-import { ParagraphNode, TextNode } from "lexical";
+import { ParagraphNode, TextNode, BLUR_COMMAND, $getRoot } from "lexical";
 import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
@@ -26,6 +29,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 const editorConfig: InitialConfigType = {
   namespace: "Editor",
@@ -45,7 +49,15 @@ const editorConfig: InitialConfigType = {
   },
 };
 
-export function RichTextEditorDemo() {
+export function RichTextEditorDemo({
+  onChange,
+  onBlur,
+  disabled,
+}: {
+  onChange?: (value: string) => void;
+  onBlur?: () => void;
+  disabled?: boolean;
+}) {
   return (
     <div className="bg-background w-full overflow-hidden rounded-lg border">
       <LexicalComposer
@@ -54,7 +66,11 @@ export function RichTextEditorDemo() {
         }}
       >
         <TooltipProvider>
-          <Plugins />
+          <EditorWithFormIntegration
+            onChange={onChange}
+            onBlur={onBlur}
+            disabled={disabled}
+          />
         </TooltipProvider>
       </LexicalComposer>
     </div>
@@ -63,7 +79,45 @@ export function RichTextEditorDemo() {
 
 const placeholder = "Start typing...";
 
-export function Plugins() {
+function EditorWithFormIntegration({
+  onChange,
+  onBlur,
+}: {
+  onChange?: (value: string) => void;
+  onBlur?: () => void;
+  disabled?: boolean;
+}) {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    return editor.registerUpdateListener(({ editorState }) => {
+      if (onChange) {
+        editorState.read(() => {
+          const root = $getRoot();
+          const textContent = root.getTextContent();
+          onChange(textContent);
+        });
+      }
+    });
+  }, [editor, onChange]);
+
+  useEffect(() => {
+    return editor.registerCommand(
+      BLUR_COMMAND,
+      () => {
+        if (onBlur) {
+          onBlur();
+        }
+        return false;
+      },
+      1,
+    );
+  }, [editor, onBlur]);
+
+  return <Plugins />;
+}
+
+function Plugins() {
   return (
     <div className="relative">
       {/* toolbar plugins */}
@@ -99,11 +153,31 @@ export function Plugins() {
   );
 }
 
+interface IssueForm {
+  title: string;
+  description: string;
+}
 export default function NewIssuePage() {
-  const [title, setTitle] = useState("");
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = useForm<IssueForm>();
+  const router = useRouter();
+  const onSubmit = async (data: IssueForm) => {
+    try {
+      const response = await axios.post("/api/issues/new", data);
+      router.push("/issues");
+    } catch (error) {
+      console.error("Error creating issue:", error);
+      alert("Failed to create issue. Please try again.");
+    }
+  };
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
+    <form className="max-w-4xl mx-auto p-4" onSubmit={handleSubmit(onSubmit)}>
       <h1 className="text-3xl font-bold mb-6">Create New Issue</h1>
 
       <div className="space-y-6">
@@ -114,26 +188,32 @@ export default function NewIssuePage() {
           <Input
             id="title"
             placeholder="Enter issue title..."
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            {...register("title")}
             className="text-lg"
           />
         </div>
 
         <div className="space-y-2">
           <Label className="text-sm font-medium">Description</Label>
-          <RichTextEditorDemo />
+          <Controller
+            control={control}
+            name="description"
+            render={({ field }) => (
+              <RichTextEditorDemo
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                disabled={field.disabled}
+              />
+            )}
+          />
         </div>
 
         <div className="flex gap-4 pt-4">
-          <Button type="submit" className="px-6">
-            Create Issue
-          </Button>
-          <Button variant="outline" type="button">
-            Cancel
+          <Button type="submit" className="px-6" disabled={isSubmitting}>
+            {isSubmitting ? "Creating..." : "Create Issue"}
           </Button>
         </div>
       </div>
-    </div>
+    </form>
   );
 }
