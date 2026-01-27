@@ -4,8 +4,7 @@ import { Badge } from "./ui/badge";
 const statusMap: Record<Status, { label: string; className: string }> = {
   OPEN: {
     label: "Open",
-    className:
-      "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300",
+    className: "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300",
   },
   IN_PROGRESS: {
     label: "In Progress",
@@ -14,7 +13,8 @@ const statusMap: Record<Status, { label: string; className: string }> = {
   },
   CLOSED: {
     label: "Closed",
-    className: "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300",
+    className:
+      "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300",
   },
 };
 
