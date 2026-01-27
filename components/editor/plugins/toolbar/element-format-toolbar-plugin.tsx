@@ -66,6 +66,7 @@ export function ElementFormatToolbarPlugin() {
       <Button
         variant="ghost"
         size="sm"
+        type="button"
         onClick={() => formatHeading("h1")}
         title="Heading 1"
       >
@@ -74,6 +75,7 @@ export function ElementFormatToolbarPlugin() {
       <Button
         variant="ghost"
         size="sm"
+        type="button"
         onClick={() => formatHeading("h2")}
         title="Heading 2"
       >
@@ -85,6 +87,7 @@ export function ElementFormatToolbarPlugin() {
       <Button
         variant="ghost"
         size="sm"
+        type="button"
         onClick={() => formatText("bold")}
         title="Bold"
       >
@@ -93,6 +96,7 @@ export function ElementFormatToolbarPlugin() {
       <Button
         variant="ghost"
         size="sm"
+        type="button"
         onClick={() => formatText("italic")}
         title="Italic"
       >
@@ -101,6 +105,7 @@ export function ElementFormatToolbarPlugin() {
       <Button
         variant="ghost"
         size="sm"
+        type="button"
         onClick={() => formatText("underline")}
         title="Underline"
       >
@@ -112,6 +117,7 @@ export function ElementFormatToolbarPlugin() {
       <Button
         variant="ghost"
         size="sm"
+        type="button"
         onClick={() => formatList("bullet")}
         title="Bullet List"
       >
@@ -120,6 +126,7 @@ export function ElementFormatToolbarPlugin() {
       <Button
         variant="ghost"
         size="sm"
+        type="button"
         onClick={() => formatList("number")}
         title="Numbered List"
       >
@@ -128,12 +135,19 @@ export function ElementFormatToolbarPlugin() {
 
       {/* Other elements */}
       <div className="w-px h-6 bg-border mx-1" />
-      <Button variant="ghost" size="sm" onClick={formatQuote} title="Quote">
+      <Button
+        variant="ghost"
+        size="sm"
+        type="button"
+        onClick={formatQuote}
+        title="Quote"
+      >
         <Quote className="h-4 w-4" />
       </Button>
       <Button
         variant="ghost"
         size="sm"
+        type="button"
         onClick={() => {
           /* TODO: Implement code block */
         }}
@@ -144,6 +158,7 @@ export function ElementFormatToolbarPlugin() {
       <Button
         variant="ghost"
         size="sm"
+        type="button"
         onClick={() => {
           /* TODO: Implement link */
         }}

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import IssueStatusBadge from "@/components/IssueStatusBadge";
-
+import ReactMarkdown from "react-markdown";
 interface Props {
   params: Promise<{ id: string }>;
 }
@@ -24,7 +24,7 @@ const IssueDetailPage = async ({ params }: Props) => {
         </p>
       </div>
       <div className="prose prose-gray dark:prose-invert max-w-none">
-        <p>{issue.description}</p>
+        <ReactMarkdown>{issue.description}</ReactMarkdown>
       </div>
     </div>
   );

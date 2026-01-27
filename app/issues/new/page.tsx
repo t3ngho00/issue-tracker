@@ -2,224 +2,76 @@
 
 import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
-import { useEffect } from "react";
-import {
-  InitialConfigType,
-  LexicalComposer,
-} from "@lexical/react/LexicalComposer";
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
-import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
-import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
-import { HeadingNode, QuoteNode } from "@lexical/rich-text";
-import { ListNode, ListItemNode } from "@lexical/list";
-import { LinkNode } from "@lexical/link";
-import { CodeNode } from "@lexical/code";
-import { ParagraphNode, TextNode, BLUR_COMMAND, $getRoot } from "lexical";
-import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
-import { ListPlugin } from "@lexical/react/LexicalListPlugin";
-import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
-import { TRANSFORMERS } from "@lexical/markdown";
-
-import { ContentEditable } from "@/components/editor/editor-ui/content-editable";
-import { ElementFormatToolbarPlugin } from "@/components/editor/plugins/toolbar/element-format-toolbar-plugin";
-import { ToolbarPlugin } from "@/components/editor/plugins/toolbar/toolbar-plugin";
-import { editorTheme } from "@/components/editor/themes/editor-theme";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createIssueSchema } from "@/app/validationSchemas";
 import { z } from "zod";
 import { ErrorMessage } from "@/components/ErrorMessage";
+import dynamic from "next/dynamic";
+import "easymde/dist/easymde.min.css";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+const SimpleMDE = dynamic(() => import("react-simplemde-editor"), {
+  ssr: false,
+});
 
 type IssueForm = z.infer<typeof createIssueSchema>;
-const editorConfig: InitialConfigType = {
-  namespace: "Editor",
-  theme: editorTheme,
-  nodes: [
-    HeadingNode,
-    ParagraphNode,
-    TextNode,
-    QuoteNode,
-    ListNode,
-    ListItemNode,
-    LinkNode,
-    CodeNode,
-  ],
-  onError: (error: Error) => {
-    console.error(error);
-  },
-};
-
-export function RichTextEditorDemo({
-  onChange,
-  onBlur,
-  disabled,
-}: {
-  onChange?: (value: string) => void;
-  onBlur?: () => void;
-  disabled?: boolean;
-}) {
-  return (
-    <div className="bg-background w-full overflow-hidden rounded-lg border">
-      <LexicalComposer
-        initialConfig={{
-          ...editorConfig,
-        }}
-      >
-        <TooltipProvider>
-          <EditorWithFormIntegration
-            onChange={onChange}
-            onBlur={onBlur}
-            disabled={disabled}
-          />
-        </TooltipProvider>
-      </LexicalComposer>
-    </div>
-  );
-}
-
-const placeholder = "Start typing...";
-
-function EditorWithFormIntegration({
-  onChange,
-  onBlur,
-}: {
-  onChange?: (value: string) => void;
-  onBlur?: () => void;
-  disabled?: boolean;
-}) {
-  const [editor] = useLexicalComposerContext();
-
-  useEffect(() => {
-    return editor.registerUpdateListener(({ editorState }) => {
-      if (onChange) {
-        editorState.read(() => {
-          const root = $getRoot();
-          const textContent = root.getTextContent();
-          onChange(textContent);
-        });
-      }
-    });
-  }, [editor, onChange]);
-
-  useEffect(() => {
-    return editor.registerCommand(
-      BLUR_COMMAND,
-      () => {
-        if (onBlur) {
-          onBlur();
-        }
-        return false;
-      },
-      1,
-    );
-  }, [editor, onBlur]);
-
-  return <Plugins />;
-}
-
-function Plugins() {
-  return (
-    <div className="relative">
-      {/* toolbar plugins */}
-      <ToolbarPlugin>
-        {() => (
-          <div className="vertical-align-middle sticky top-0 z-10 flex gap-2 overflow-auto border-b p-1">
-            <ElementFormatToolbarPlugin />
-          </div>
-        )}
-      </ToolbarPlugin>
-
-      <div className="relative">
-        <RichTextPlugin
-          contentEditable={
-            <div className="">
-              <div className="">
-                <ContentEditable
-                  placeholder={placeholder}
-                  className="ContentEditable__root relative block h-72 min-h-72 overflow-auto px-8 py-4 focus:outline-none"
-                />
-              </div>
-            </div>
-          }
-          ErrorBoundary={LexicalErrorBoundary}
-        />
-        <TabIndentationPlugin />
-        <ListPlugin />
-        <LinkPlugin />
-        <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-      </div>
-    </div>
-  );
-}
 
 export default function NewIssuePage() {
   const {
     register,
     control,
     handleSubmit,
-    formState: { isSubmitting, errors },
+    formState: { errors },
   } = useForm<IssueForm>({
     resolver: zodResolver(createIssueSchema),
     defaultValues: { title: "", description: "" },
   });
   const router = useRouter();
-  const onSubmit = async (data: IssueForm) => {
+  const [error, setError] = useState("");
+  const [isSubmitting, setSubmitting] = useState(false);
+
+  const onSubmit = handleSubmit(async (data: IssueForm) => {
     try {
+      setSubmitting(true);
       await axios.post("/api/issues/new", data);
       router.push("/issues");
-    } catch (error) {
-      console.error("Error creating issue:", error);
-      toast.error("Failed to create issue. Please try again.");
+      router.refresh();
+    } catch {
+      setSubmitting(false);
+      setError("An unexpected error occurred.");
     }
-  };
+  });
 
   return (
-    <form className="max-w-4xl mx-auto p-4" onSubmit={handleSubmit(onSubmit)}>
-      <h1 className="text-3xl font-bold mb-6">Create New Issue</h1>
-
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="title" className="text-sm font-medium">
-            Title
-          </Label>
-          <Input
-            id="title"
-            placeholder="Enter issue title..."
-            {...register("title")}
-            className="text-lg"
-          />
-        </div>
-        {errors.title && <ErrorMessage>{errors.title.message}</ErrorMessage>}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">Description</Label>
-          <Controller
-            control={control}
-            name="description"
-            render={({ field }) => (
-              <RichTextEditorDemo
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-                disabled={field.disabled}
-              />
-            )}
-          />
-        </div>
-        {errors.description && (
+    <div className="max-w-xl">
+      {error && (
+        <Alert variant="destructive" className="mb-5">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      <form className="space-y-3" onSubmit={onSubmit}>
+        <Input placeholder="Title" {...register("title")} />
+        {errors.title?.message && (
+          <ErrorMessage>{errors.title.message}</ErrorMessage>
+        )}
+        <Controller
+          name="description"
+          control={control}
+          render={({ field }) => (
+            <SimpleMDE placeholder="Description" {...field} />
+          )}
+        />
+        {errors.description?.message && (
           <ErrorMessage>{errors.description.message}</ErrorMessage>
         )}
-
-        <div className="flex gap-4 pt-4">
-          <Button type="submit" className="px-6" disabled={isSubmitting}>
-            {isSubmitting ? "Creating..." : "Create Issue"}
-          </Button>
-        </div>
-      </div>
-    </form>
+        <Button disabled={isSubmitting} type="submit">
+          Submit New Issue {isSubmitting && "Creating..."}
+        </Button>
+      </form>
+    </div>
   );
 }
