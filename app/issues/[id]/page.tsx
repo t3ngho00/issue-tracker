@@ -1,6 +1,6 @@
+import IssueStatusBadge from "@/components/IssueStatusBadge";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import IssueStatusBadge from "@/components/IssueStatusBadge";
 import ReactMarkdown from "react-markdown";
 interface Props {
   params: Promise<{ id: string }>;
