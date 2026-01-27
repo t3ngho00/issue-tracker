@@ -1,16 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import React from "react";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import IssueStatusBadge from "@/components/IssueStatusBadge";
 const page = async () => {
   const issues = await prisma.issue.findMany();
   return (
@@ -27,7 +26,9 @@ const page = async () => {
           {issues.map((issue) => (
             <TableRow key={issue.id}>
               <TableCell className="font-medium">{issue.title}</TableCell>
-              <TableCell>{issue.status}</TableCell>
+              <TableCell className="align-middle">
+                <IssueStatusBadge status={issue.status} />
+              </TableCell>
               <TableCell>{issue.createdAt.toDateString()}</TableCell>
             </TableRow>
           ))}
