@@ -26,7 +26,14 @@ const page = async () => {
         <TableBody>
           {issues.map((issue) => (
             <TableRow key={issue.id}>
-              <TableCell className="font-medium"><Link href={`/issues/${issue.id}`}>{issue.title}</Link></TableCell>
+              <TableCell className="font-medium">
+                <Link
+                  href={`/issues/${issue.id}`}
+                  className="text-primary hover:underline hover:text-primary/80 transition-colors"
+                >
+                  {issue.title}
+                </Link>
+              </TableCell>
               <TableCell className="align-middle">
                 <IssueStatusBadge status={issue.status} />
               </TableCell>
