@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import EditIssueButton from "../EditIssueButton";
+import DeleteIssueButton from "../DeleteIssueButton";
 import IssueDetail from "../IssueDetail";
 interface Props {
   params: Promise<{ id: string }>;
@@ -15,12 +16,15 @@ const IssueDetailPage = async ({ params }: Props) => {
   if (!issue) notFound();
 
   return (
-    <div className="p-5 max-w-2xl lg:max-w-none grid grid-cols-1 lg:grid-cols-2 lg:gap-4">
-      <div>
+    <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-4">
+      <div className="lg:col-span-4">
         <IssueDetail issue={issue} />
       </div>
-      <div className="mt-4 lg:mt-0">
-        <EditIssueButton issueId={issue.id} />
+      <div className="mt-4 lg:mt-0 lg:col-span-1">
+        <div className="w-full flex flex-col gap-2">
+          <EditIssueButton issueId={issue.id} />
+          <DeleteIssueButton issueId={issue.id} />
+        </div>
       </div>
     </div>
   );

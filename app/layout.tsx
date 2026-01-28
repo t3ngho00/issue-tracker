@@ -31,7 +31,7 @@ export default function RootLayout({
       >
         <Providers>
           <NavBar />
-          <main className="p-5">{children}</main>
+          <main className="p-5 max-w-7xl mx-auto">{children}</main>
         </Providers>
       </body>
     </html>
