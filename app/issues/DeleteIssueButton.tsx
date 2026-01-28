@@ -10,12 +10,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import axios from "axios";
 import { Trash } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const DeleteIssueButton = ({ issueId }: { issueId: number }) => {
   const [open, setOpen] = useState(false);
-
+  const router = useRouter();
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -36,7 +38,14 @@ const DeleteIssueButton = ({ issueId }: { issueId: number }) => {
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button variant="destructive" onClick={() => setOpen(false)}>
+          <Button
+            variant="destructive"
+            onClick={async () => {
+              await axios.delete(`/api/issues/${issueId}`);
+              router.push("/issues");
+              router.refresh();
+            }}
+          >
             Yes, delete
           </Button>
         </DialogFooter>
