@@ -6,6 +6,7 @@ import { ErrorMessage } from "@/components/ErrorMessage";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import "easymde/dist/easymde.min.css";
@@ -43,7 +44,11 @@ export default function IssueForm({ issue }: { issue?: Issue }) {
   const onSubmit = handleSubmit(async (data: IssueForm) => {
     try {
       setSubmitting(true);
-      await axios.post("/api/issues/new", data);
+      if (issue) {
+        await axios.patch("/api/issues/" + issue.id, data);
+      } else {
+        await axios.post("/api/issues/new", data);
+      }
       router.push("/issues");
       router.refresh();
     } catch {
@@ -75,7 +80,7 @@ export default function IssueForm({ issue }: { issue?: Issue }) {
           <ErrorMessage>{errors.description.message}</ErrorMessage>
         )}
         <Button disabled={isSubmitting} type="submit">
-          Submit New Issue {isSubmitting && "Creating..."}
+          {issue ? "Update issue" : "Submit New Issue"} {isSubmitting && <Spinner />}
         </Button>
       </form>
     </div>
