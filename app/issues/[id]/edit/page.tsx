@@ -1,6 +1,11 @@
 import { prisma } from "@/lib/prisma";
-import IssueForm from "../../_component/IssueForm";
 import { notFound } from "next/navigation";
+import dynamic from "next/dynamic";
+import IssueFormSkeleton from "../../_component/IssueFormSkeleton";
+
+const IssueForm = dynamic(() => import("../../_component/IssueForm"), {
+  loading: () => <IssueFormSkeleton />,
+});
 
 interface Props {
   params: Promise<{ id: string }>;
