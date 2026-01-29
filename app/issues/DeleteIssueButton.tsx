@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Spinner } from "@/components/ui/spinner";
 import axios from "axios";
 import { Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -18,14 +19,18 @@ import { useState } from "react";
 const DeleteIssueButton = ({ issueId }: { issueId: number }) => {
   const [error, setError] = useState(false);
   const [open, setOpen] = useState(false);
+  const [isDeleting, setDeleting] = useState(false);
   const router = useRouter();
 
   const deleteIssue = async () => {
     try {
+      setDeleting(true);
+      setOpen(false);
       await axios.delete(`/api/issues/${issueId}`);
       router.push("/issues");
       router.refresh();
     } catch {
+      setDeleting(false);
       setError(true);
       setOpen(false);
     }
@@ -35,9 +40,10 @@ const DeleteIssueButton = ({ issueId }: { issueId: number }) => {
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button variant="destructive">
+          <Button variant="destructive" disabled={isDeleting}>
             <Trash className="w-4 h-4" />
             Delete issue
+            {isDeleting && <Spinner />}
           </Button>
         </DialogTrigger>
         <DialogContent>
