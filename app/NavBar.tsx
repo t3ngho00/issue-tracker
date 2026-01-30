@@ -7,6 +7,16 @@ import { cn } from "@/lib/utils";
 import ModeToggle from "@/components/mode-toggle";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { LogOutIcon } from "lucide-react";
+import { signOut } from "next-auth/react";
 
 const NavBar = () => {
   const links = [
@@ -14,7 +24,7 @@ const NavBar = () => {
     { label: "Issues", href: "/issues" },
   ];
   const currentPath = usePathname();
-  const { data: session } = useSession();
+  const { status, data: session } = useSession();
 
   return (
     <nav className="flex items-center justify-between border-b px-5 h-14">
@@ -39,10 +49,34 @@ const NavBar = () => {
         </ul>
       </div>
       <div className="flex items-center space-x-4">
-        {session?.user ? (
-          <Button>
-            <Link href={"/api/auth/signout"}>Sign out</Link>
-          </Button>
+        {status === "authenticated" ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <Avatar>
+                  <AvatarImage
+                    src={session.user?.image || ""}
+                    alt={session.user?.name || "User"}
+                  />
+                  <AvatarFallback>
+                    {session.user?.name?.charAt(0) ||
+                      session.user?.email?.charAt(0) ||
+                      "U"}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <div className="px-2 py-1.5 text-sm font-medium">
+                {session.user?.email}
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => signOut()}>
+                <LogOutIcon />
+                Sign Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         ) : (
           <Button>
             <Link href={"/api/auth/signin"}>Sign in</Link>
