@@ -57,6 +57,7 @@ const NavBar = () => {
                   <AvatarImage
                     src={session.user?.image || ""}
                     alt={session.user?.name || "User"}
+                    referrerPolicy="no-referrer"
                   />
                   <AvatarFallback>
                     {session.user?.name?.charAt(0) ||
