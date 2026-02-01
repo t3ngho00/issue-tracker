@@ -33,7 +33,7 @@ export default function RootLayout({
         <SessionProvider>
           <Providers>
             <NavBar />
-            <main className="p-5 max-w-7xl mx-auto">{children}</main>
+            <main className="mt-2 max-w-7xl mx-auto">{children}</main>
           </Providers>
         </SessionProvider>
       </body>
