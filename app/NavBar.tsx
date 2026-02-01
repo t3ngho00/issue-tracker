@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LogOutIcon } from "lucide-react";
 import { signOut } from "next-auth/react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const NavBar = () => {
   return (
@@ -62,7 +63,8 @@ const NavLinks = () => {
 
 const AuthStatus = () => {
   const { status, data: session } = useSession();
-  if (status === "loading") return null;
+  if (status === "loading")
+    return <Skeleton className="h-10 w-20 rounded-md bg-primary" />;
 
   if (status === "unauthenticated")
     return (
