@@ -14,30 +14,22 @@ import axios from "axios";
 import { toast } from "sonner";
 
 const AssigneeSelect = ({ issue }: { issue: Issue }) => {
-  const {
-    data: users,
-    isLoading,
-    error,
-  } = useQuery<User[]>({
-    queryKey: ["users"],
-    queryFn: async () => {
-      return axios.get<User[]>("/api/users").then((res) => res.data);
-    },
-    staleTime: 60 * 1000, // 60s
-  });
-
+  const { data: users, isLoading, error } = useUser();
+  const assignIssue = (userId: string) => {
+    axios
+      .patch(`/api/issues/${issue.id}`, {
+        assignedToUserId: userId === "unassigned" ? null : userId,
+      })
+      .catch(() => {
+        toast.error("Changes could not be saved");
+      });
+  };
   if (error) return null;
   if (isLoading) return <Skeleton className="h-4 w-full" />;
 
   return (
     <Select
-      onValueChange={(userId) => {
-        axios.patch(`/api/issues/${issue.id}`, {
-          assignedToUserId: userId === "unassigned" ? null : userId,
-        }).catch(() => {
-          toast.error("Changes could not be saved")
-        });
-      }}
+      onValueChange={assignIssue}
       defaultValue={issue.assignedToUserId || "unassigned"}
     >
       <SelectTrigger className="w-full">
@@ -55,6 +47,16 @@ const AssigneeSelect = ({ issue }: { issue: Issue }) => {
       </SelectContent>
     </Select>
   );
+};
+
+const useUser = () => {
+  return useQuery<User[]>({
+    queryKey: ["users"],
+    queryFn: async () => {
+      return axios.get<User[]>("/api/users").then((res) => res.data);
+    },
+    staleTime: 60 * 1000, // 60s
+  });
 };
 
 export default AssigneeSelect;
