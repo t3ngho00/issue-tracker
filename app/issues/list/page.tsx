@@ -9,10 +9,17 @@ import {
 } from "@/components/ui/table";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import IssueActions from "./IssueActions";
+import IssueActions from "../IssueActions";
+import { Status } from "@/app/generated/prisma/enums";
 
-const page = async () => {
-  const issues = await prisma.issue.findMany();
+interface Props {
+  searchParams: Promise<{ status: Status }>;
+}
+const IssuePage = async ({ searchParams }: Props) => {
+  const { status } = (await searchParams) || undefined;
+  const issues = await prisma.issue.findMany({
+    where: { status },
+  });
   return (
     <div>
       <IssueActions />
@@ -47,5 +54,5 @@ const page = async () => {
   );
 };
 
-export default page;
+export default IssuePage;
 export const dynamic = "force-dynamic";

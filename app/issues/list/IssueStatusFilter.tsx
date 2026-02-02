@@ -1,3 +1,4 @@
+"use client";
 import { Status } from "@/app/generated/prisma/enums";
 import {
   Select,
@@ -7,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useRouter } from "next/navigation";
 
 const statuses: { label: string; value?: Status }[] = [
   { label: "All" },
@@ -15,8 +17,14 @@ const statuses: { label: string; value?: Status }[] = [
   { label: "Closed", value: "CLOSED" },
 ];
 const IssueStatusFilter = () => {
+  const router = useRouter();
   return (
-    <Select>
+    <Select
+      onValueChange={(status) => {
+        const query = status === "All" ? "" : `/?status=${status}`;
+        router.push("/issues/list/" + query);
+      }}
+    >
       <SelectTrigger>
         <SelectValue placeholder="Filter issues by status..." />
       </SelectTrigger>
