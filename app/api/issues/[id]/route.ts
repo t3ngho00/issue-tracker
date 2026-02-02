@@ -1,12 +1,7 @@
+import { patchIssueSchema } from "@/app/validationSchemas";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-
-const schema = z.object({
-  title: z.string().min(1).max(255),
-  description: z.string().min(1).max(255),
-});
 
 export async function PATCH(
   request: NextRequest,
@@ -19,10 +14,11 @@ export async function PATCH(
 
   const { id } = await params;
   const body = await request.json();
-  const validation = await schema.safeParse(body);
+  const validation = patchIssueSchema.safeParse(body);
   if (!validation.success)
     return NextResponse.json(validation.error, { status: 400 });
 
+  const { title, description, assignedToUserId } = body;
   const issue = await prisma.issue.findUnique({
     where: { id: parseInt(id) },
   });
@@ -30,13 +26,26 @@ export async function PATCH(
   if (!issue)
     return NextResponse.json({ error: "Issue not found" }, { status: 404 });
 
+  if (assignedToUserId) {
+    const user = await prisma.user.findUnique({
+      where: { id: assignedToUserId },
+    });
+    if (!user) {
+      return NextResponse.json(
+        { error: "Assigned user not found" },
+        { status: 404 },
+      );
+    }
+  }
+
   const updatedIssue = await prisma.issue.update({
     where: { id: parseInt(id) },
-    data: { title: body.title, description: body.description },
+    data: { title, description, assignedToUserId },
   });
 
   return NextResponse.json(updatedIssue, { status: 200 });
 }
+
 export async function DELETE(
   _: NextRequest,
   { params }: { params: Promise<{ id: string }> },
