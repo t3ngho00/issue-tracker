@@ -27,7 +27,7 @@ const IssueDetailPage = async ({ params }: Props) => {
       {session && (
         <div className="mt-4 lg:mt-0 lg:col-span-1">
           <div className="w-full flex flex-col gap-2">
-            <AssigneeSelect />
+            <AssigneeSelect issue={issue} />
             <EditIssueButton issueId={issue.id} />
             <DeleteIssueButton issueId={issue.id} />
           </div>
