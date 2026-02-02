@@ -3,11 +3,15 @@ import { notFound } from "next/navigation";
 import EditIssueButton from "../EditIssueButton";
 import DeleteIssueButton from "../DeleteIssueButton";
 import IssueDetail from "../IssueDetail";
+import AssigneeSelect from "./AssigneeSelect";
+import { auth } from "@/auth";
+
 interface Props {
   params: Promise<{ id: string }>;
 }
 
 const IssueDetailPage = async ({ params }: Props) => {
+  const session = await auth();
   const { id } = await params;
   const issue = await prisma.issue.findUnique({
     where: { id: parseInt(id) },
@@ -20,12 +24,15 @@ const IssueDetailPage = async ({ params }: Props) => {
       <div className="lg:col-span-4">
         <IssueDetail issue={issue} />
       </div>
-      <div className="mt-4 lg:mt-0 lg:col-span-1">
-        <div className="w-full flex flex-col gap-2">
-          <EditIssueButton issueId={issue.id} />
-          <DeleteIssueButton issueId={issue.id} />
+      {session && (
+        <div className="mt-4 lg:mt-0 lg:col-span-1">
+          <div className="w-full flex flex-col gap-2">
+            <AssigneeSelect />
+            <EditIssueButton issueId={issue.id} />
+            <DeleteIssueButton issueId={issue.id} />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
