@@ -4,6 +4,7 @@ import "./globals.css";
 import NavBar from "./NavBar";
 import { Providers } from "./providers";
 import { SessionProvider } from "next-auth/react";
+import QueryClientProvider from "./QueryClientProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,12 +31,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SessionProvider>
-          <Providers>
-            <NavBar />
-            <main className="mt-2 max-w-7xl mx-auto">{children}</main>
-          </Providers>
-        </SessionProvider>
+        <QueryClientProvider>
+          <SessionProvider>
+            <Providers>
+              <NavBar />
+              <main className="mt-2 max-w-7xl mx-auto">{children}</main>
+            </Providers>
+          </SessionProvider>
+        </QueryClientProvider>
       </body>
     </html>
   );
