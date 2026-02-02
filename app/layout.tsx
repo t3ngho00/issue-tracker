@@ -35,7 +35,7 @@ export default function RootLayout({
           <SessionProvider>
             <Providers>
               <NavBar />
-              <main className="mt-2 max-w-7xl mx-auto">{children}</main>
+              <main className="max-w-7xl mx-auto p-5">{children}</main>
             </Providers>
           </SessionProvider>
         </QueryClientProvider>

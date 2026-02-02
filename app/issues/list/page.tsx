@@ -12,28 +12,29 @@ import {
 import { prisma } from "@/lib/prisma";
 import { ArrowUpIcon } from "lucide-react";
 import Link from "next/link";
-import IssueActions from "../IssueActions";
+import IssueActions from "./IssueActions";
 
 interface Props {
   searchParams: Promise<{ status: Status; orderBy: keyof Issue }>;
 }
 
 const IssuePage = async ({ searchParams }: Props) => {
-  const columns: { label: string; value: keyof Issue }[] = [
+  const columns: { label: string; value: keyof Issue; className?: string }[] = [
     { label: "Issue", value: "title" },
-    { label: "Status", value: "status" },
-    { label: "Created", value: "createdAt" },
+    { label: "Status", value: "status", className: "hidden md:table-cell" },
+    { label: "Created", value: "createdAt", className: "hidden md:table-cell" },
   ];
 
   const params = (await searchParams) || undefined;
-  const orderBy = columns.map(column => column.value).includes(params.orderBy) ?
-  { [params.orderBy]: "asc" } : undefined
+  const orderBy = columns.map((column) => column.value).includes(params.orderBy)
+    ? { [params.orderBy]: "asc" }
+    : undefined;
 
   const statuses = Object.values(Status);
   const status = statuses.includes(params.status) ? params.status : undefined;
   const issues = await prisma.issue.findMany({
     where: { status },
-    orderBy
+    orderBy,
   });
   return (
     <div>
@@ -42,7 +43,7 @@ const IssuePage = async ({ searchParams }: Props) => {
         <TableHeader>
           <TableRow>
             {columns.map((column) => (
-              <TableHead key={column.value}>
+              <TableHead key={column.value} className={column.className}>
                 <Link
                   href={{
                     query: { ...params, orderBy: column.value },
@@ -60,18 +61,48 @@ const IssuePage = async ({ searchParams }: Props) => {
         <TableBody>
           {issues.map((issue) => (
             <TableRow key={issue.id}>
-              <TableCell className="font-medium">
-                <Link
-                  href={`/issues/${issue.id}`}
-                  className="text-primary hover:underline hover:text-primary/80 transition-colors"
-                >
-                  {issue.title}
-                </Link>
-              </TableCell>
-              <TableCell className="align-middle">
-                <IssueStatusBadge status={issue.status} />
-              </TableCell>
-              <TableCell>{issue.createdAt.toDateString()}</TableCell>
+              {columns.map((column) => {
+                let cellContent;
+                switch (column.value) {
+                  case "title":
+                    cellContent = (
+                      <>
+                        <Link
+                          href={`/issues/${issue.id}`}
+                          className="text-primary hover:underline hover:text-primary/80 transition-colors"
+                        >
+                          {issue.title}
+                        </Link>
+                        <div className="md:hidden mt-1">
+                          <IssueStatusBadge status={issue.status} />
+                        </div>
+                      </>
+                    );
+                    break;
+                  case "status":
+                    cellContent = <IssueStatusBadge status={issue.status} />;
+                    break;
+                  case "createdAt":
+                    cellContent = issue.createdAt.toDateString();
+                    break;
+                  default:
+                    cellContent = null;
+                }
+                return (
+                  <TableCell
+                    key={column.value}
+                    className={`${column.className || ""} ${
+                      column.value === "title"
+                        ? "font-medium"
+                        : column.value === "status"
+                          ? "align-middle"
+                          : ""
+                    }`}
+                  >
+                    {cellContent}
+                  </TableCell>
+                );
+              })}
             </TableRow>
           ))}
         </TableBody>
