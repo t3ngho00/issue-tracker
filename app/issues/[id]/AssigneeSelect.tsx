@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { User } from "@/app/generated/prisma/client";
 import {
   Select,
@@ -8,20 +8,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { useEffect, useState } from "react";
 
 const AssigneeSelect = () => {
-  const [users, setUsers] = useState<User[]>([]);
+  const {
+    data: users,
+    isLoading,
+    error,
+  } = useQuery<User[]>({
+    queryKey: ["users"],
+    queryFn: async () => {
+      return axios.get<User[]>("/api/users").then((res) => res.data);
+    },
+    staleTime: 60 * 1000, // 60s
+  });
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      const { data } = await axios.get<User[]>("/api/users");
-      setUsers(data);
-    };
-
-    fetchUsers();
-  }, []);
+  if (error) return null;
+  if (isLoading) return <Skeleton className="h-4 w-full" />;
 
   return (
     <Select>
@@ -30,10 +35,11 @@ const AssigneeSelect = () => {
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
-          {users.map(user =>
-            <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
-          )}
-
+          {users?.map((user) => (
+            <SelectItem key={user.id} value={user.id}>
+              {user.name}
+            </SelectItem>
+          ))}
         </SelectGroup>
       </SelectContent>
     </Select>
