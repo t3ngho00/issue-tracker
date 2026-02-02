@@ -1,3 +1,5 @@
+import { Issue } from "@/app/generated/prisma/client";
+import { Status } from "@/app/generated/prisma/enums";
 import IssueStatusBadge from "@/components/IssueStatusBadge";
 import {
   Table,
@@ -8,15 +10,25 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { prisma } from "@/lib/prisma";
+import { ArrowUpIcon } from "lucide-react";
 import Link from "next/link";
 import IssueActions from "../IssueActions";
-import { Status } from "@/app/generated/prisma/enums";
 
 interface Props {
-  searchParams: Promise<{ status: Status }>;
+  searchParams: Promise<{ status: Status; orderBy: keyof Issue }>;
 }
+
 const IssuePage = async ({ searchParams }: Props) => {
-  const { status } = (await searchParams) || undefined;
+  const columns: { label: string; value: keyof Issue }[] = [
+    { label: "Issue", value: "title" },
+    { label: "Status", value: "status" },
+    { label: "Created", value: "createdAt" },
+  ];
+
+  const sPs = (await searchParams) || undefined;
+
+  const statuses = Object.values(Status);
+  const status = statuses.includes(sPs.status) ? sPs.status : undefined;
   const issues = await prisma.issue.findMany({
     where: { status },
   });
@@ -26,9 +38,20 @@ const IssuePage = async ({ searchParams }: Props) => {
       <Table className="mb-5">
         <TableHeader>
           <TableRow>
-            <TableHead className="w-25">Issue</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Created</TableHead>
+            {columns.map((column) => (
+              <TableHead key={column.value}>
+                <Link
+                  href={{
+                    query: { ...sPs, orderBy: column.value },
+                  }}
+                >
+                  {column.label}
+                </Link>
+                {column.value === sPs.orderBy && (
+                  <ArrowUpIcon className="inline" />
+                )}
+              </TableHead>
+            ))}
           </TableRow>
         </TableHeader>
         <TableBody>
