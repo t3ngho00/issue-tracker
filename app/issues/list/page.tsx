@@ -25,12 +25,15 @@ const IssuePage = async ({ searchParams }: Props) => {
     { label: "Created", value: "createdAt" },
   ];
 
-  const sPs = (await searchParams) || undefined;
+  const params = (await searchParams) || undefined;
+  const orderBy = columns.map(column => column.value).includes(params.orderBy) ?
+  { [params.orderBy]: "asc" } : undefined
 
   const statuses = Object.values(Status);
-  const status = statuses.includes(sPs.status) ? sPs.status : undefined;
+  const status = statuses.includes(params.status) ? params.status : undefined;
   const issues = await prisma.issue.findMany({
     where: { status },
+    orderBy
   });
   return (
     <div>
@@ -42,12 +45,12 @@ const IssuePage = async ({ searchParams }: Props) => {
               <TableHead key={column.value}>
                 <Link
                   href={{
-                    query: { ...sPs, orderBy: column.value },
+                    query: { ...params, orderBy: column.value },
                   }}
                 >
                   {column.label}
                 </Link>
-                {column.value === sPs.orderBy && (
+                {column.value === params.orderBy && (
                   <ArrowUpIcon className="inline" />
                 )}
               </TableHead>
