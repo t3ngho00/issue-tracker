@@ -1,7 +1,7 @@
 import IssueStatusBadge from "@/components/IssueStatusBadge";
 import React from "react";
 import ReactMarkdown from "react-markdown";
-import { Issue } from "../generated/prisma/client";
+import { Issue } from "../../generated/prisma/client";
 
 const IssueDetail = ({ issue }: { issue: Issue }) => {
   return (

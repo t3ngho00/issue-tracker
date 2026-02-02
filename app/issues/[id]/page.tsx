@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import EditIssueButton from "../EditIssueButton";
-import DeleteIssueButton from "../DeleteIssueButton";
-import IssueDetail from "../IssueDetail";
+import EditIssueButton from "../_component/EditIssueButton";
+import DeleteIssueButton from "../_component/DeleteIssueButton";
+import IssueDetail from "../_component/IssueDetail";
 import AssigneeSelect from "./AssigneeSelect";
 import { auth } from "@/auth";
 
