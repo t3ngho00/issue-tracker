@@ -11,6 +11,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import { toast } from "sonner";
 
 const AssigneeSelect = ({ issue }: { issue: Issue }) => {
   const {
@@ -33,6 +34,8 @@ const AssigneeSelect = ({ issue }: { issue: Issue }) => {
       onValueChange={(userId) => {
         axios.patch(`/api/issues/${issue.id}`, {
           assignedToUserId: userId === "unassigned" ? null : userId,
+        }).catch(() => {
+          toast.error("Changes could not be saved")
         });
       }}
       defaultValue={issue.assignedToUserId || "unassigned"}
