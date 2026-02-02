@@ -10,6 +10,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import IssueActions from "./IssueActions";
+
 const page = async () => {
   const issues = await prisma.issue.findMany();
   return (

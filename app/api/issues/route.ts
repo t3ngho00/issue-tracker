@@ -1,11 +1,19 @@
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+
 const schema = z.object({
   title: z.string().min(1).max(255),
   description: z.string().min(1).max(255),
 });
+
 export async function POST(request: NextRequest) {
+  const session = await auth();
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const body = await request.json();
   const validation = await schema.safeParse(body);
   if (!validation.success)
@@ -14,5 +22,5 @@ export async function POST(request: NextRequest) {
     data: { title: body.title, description: body.description },
   });
 
-  return NextResponse.json(newIssue, { status: 200 });
+  return NextResponse.json(newIssue, { status: 201 });
 }
