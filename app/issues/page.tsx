@@ -15,6 +15,7 @@ const page = async () => {
   const issues = await prisma.issue.findMany();
   return (
     <div>
+      <IssueActions />
       <Table className="mb-5">
         <TableHeader>
           <TableRow>
@@ -42,8 +43,6 @@ const page = async () => {
           ))}
         </TableBody>
       </Table>
-
-      <IssueActions />
     </div>
   );
 };
