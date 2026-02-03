@@ -2,6 +2,7 @@ import IssueStatusBadge from "@/components/IssueStatusBadge";
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import { Issue } from "../../generated/prisma/client";
+import { Card } from "@/components/ui/card";
 
 const IssueDetail = ({ issue }: { issue: Issue }) => {
   return (
@@ -13,9 +14,11 @@ const IssueDetail = ({ issue }: { issue: Issue }) => {
           Created on {issue.createdAt.toDateString()}
         </p>
       </div>
-      <div className="prose prose-gray dark:prose-invert max-w-none">
-        <ReactMarkdown>{issue.description}</ReactMarkdown>
-      </div>
+      <Card className="p-6">
+        <div className="prose prose-gray dark:prose-invert max-w-none">
+          <ReactMarkdown>{issue.description}</ReactMarkdown>
+        </div>
+      </Card>
     </>
   );
 };

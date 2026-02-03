@@ -1,3 +1,4 @@
+import LatestIssues from "./LastestIssues"
 export default function Home() {
-  return <div>Issue tracker</div>;
+  return <LatestIssues />
 }
