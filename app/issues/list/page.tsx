@@ -13,9 +13,10 @@ import { prisma } from "@/lib/prisma";
 import { ArrowUpIcon } from "lucide-react";
 import Link from "next/link";
 import IssueActions from "./IssueActions";
+import Pagination from "@/components/Pagination";
 
 interface Props {
-  searchParams: Promise<{ status: Status; orderBy: keyof Issue }>;
+  searchParams: Promise<{ status: Status; orderBy: keyof Issue; page: string }>;
 }
 
 const IssuePage = async ({ searchParams }: Props) => {
@@ -29,12 +30,22 @@ const IssuePage = async ({ searchParams }: Props) => {
   const orderBy = columns.map((column) => column.value).includes(params.orderBy)
     ? { [params.orderBy]: "asc" }
     : undefined;
-
   const statuses = Object.values(Status);
+  const page = parseInt(params.page) || 1;
+
   const status = statuses.includes(params.status) ? params.status : undefined;
+  const where = { status };
+
+  const pageSize = 10;
   const issues = await prisma.issue.findMany({
-    where: { status },
+    where,
     orderBy,
+    skip: (page - 1) * pageSize,
+    take: pageSize,
+  });
+
+  const issueCount = await prisma.issue.count({
+    where,
   });
   return (
     <div>
@@ -107,6 +118,7 @@ const IssuePage = async ({ searchParams }: Props) => {
           ))}
         </TableBody>
       </Table>
+      <Pagination pageSize={10} currentPage={page} itemCount={issueCount} />
     </div>
   );
 };
