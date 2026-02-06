@@ -1,26 +1,26 @@
 "use client";
 
+import { createIssue, updateIssue } from "@/app/actions/issues";
 import { Issue } from "@/app/types";
-import { createIssueSchema } from "@/app/validationSchemas";
+import { createIssueSchema, patchIssueSchema } from "@/app/validationSchemas";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
 import "easymde/dist/easymde.min.css";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
 import dynamic from "next/dynamic";
+import { useState, useTransition } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
 const SimpleMDE = dynamic(() => import("react-simplemde-editor"), {
   ssr: false,
 });
 
-type IssueForm = z.infer<typeof createIssueSchema>;
+export type CreateIssueData = z.infer<typeof createIssueSchema>;
+export type PatchIssueData = z.infer<typeof patchIssueSchema>;
 
 export default function IssueForm({ issue }: { issue?: Issue }) {
   const {
@@ -28,7 +28,7 @@ export default function IssueForm({ issue }: { issue?: Issue }) {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<IssueForm>({
+  } = useForm<CreateIssueData>({
     resolver: zodResolver(createIssueSchema),
     defaultValues: issue
       ? {
@@ -37,24 +37,21 @@ export default function IssueForm({ issue }: { issue?: Issue }) {
         }
       : {},
   });
-  const router = useRouter();
-  const [error, setError] = useState("");
-  const [isSubmitting, setSubmitting] = useState(false);
 
-  const onSubmit = handleSubmit(async (data: IssueForm) => {
-    try {
-      setSubmitting(true);
-      if (issue) {
-        await axios.patch("/api/issues/" + issue.id, data);
-      } else {
-        await axios.post("/api/issues/new", data);
-      }
-      router.push("/issues/list");
-      router.refresh();
-    } catch {
-      setSubmitting(false);
-      setError("An unexpected error occurred.");
-    }
+  const [error, setError] = useState("");
+  const [isPending, startTransition] = useTransition();
+  const onSubmit = handleSubmit(async (data: CreateIssueData) => {
+    startTransition(async () => {
+      try {
+        if (issue) {
+          await updateIssue(issue.id, data);
+        } else {
+          await createIssue(data);
+        } 
+      } catch {
+          setError("An unexpected error occured.");
+        }
+    }) 
   });
 
   return (
@@ -79,9 +76,9 @@ export default function IssueForm({ issue }: { issue?: Issue }) {
         {errors.description?.message && (
           <ErrorMessage>{errors.description.message}</ErrorMessage>
         )}
-        <Button disabled={isSubmitting} type="submit">
+        <Button disabled={isPending} type="submit">
           {issue ? "Update issue" : "Submit New Issue"}{" "}
-          {isSubmitting && <Spinner />}
+          {isPending && <Spinner />}
         </Button>
       </form>
     </div>
