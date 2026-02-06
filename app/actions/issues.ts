@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@/auth";
+import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -11,10 +11,7 @@ import {
 import { createIssueSchema, patchIssueSchema } from "../validationSchemas";
 
 export async function createIssue(data: CreateIssueData) {
-  const session = await auth();
-  if (!session) {
-    throw new Error("Unauthorized");
-  }
+  await requireAuth();
 
   const validation = createIssueSchema.safeParse(data);
   if (!validation.success) throw new Error(validation.error.message);
@@ -28,22 +25,17 @@ export async function createIssue(data: CreateIssueData) {
 }
 
 export async function updateIssue(id: number, data: PatchIssueData) {
-  const session = await auth();
-  if (!session) {
-    throw new Error("Unauthorized");
-  }
+  await requireAuth();
 
   const validation = patchIssueSchema.safeParse(data);
   if (!validation.success) throw new Error(validation.error.message);
 
-  const issue = await prisma.issue.findUnique({
+  await prisma.issue.findUniqueOrThrow({
     where: { id },
   });
 
-  if (!issue) throw new Error("Issue not found");
-
   if (validation.data.assignedToUserId) {
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findUniqueOrThrow({
       where: { id: validation.data.assignedToUserId },
     });
     if (!user) throw new Error("Assigned user not found");
@@ -59,12 +51,9 @@ export async function updateIssue(id: number, data: PatchIssueData) {
 }
 
 export async function deleteIssue(id: number) {
-  const session = await auth();
-  if (!session) {
-    throw new Error("Unauthorized");
-  }
+  await requireAuth();
 
-  const issue = await prisma.issue.findUnique({
+  const issue = await prisma.issue.findUniqueOrThrow({
     where: { id },
   });
 

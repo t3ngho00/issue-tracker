@@ -1,11 +1,10 @@
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { notFound } from "next/navigation";
-import EditIssueButton from "../_component/EditIssueButton";
+import { cache } from "react";
 import DeleteIssueButton from "../_component/DeleteIssueButton";
+import EditIssueButton from "../_component/EditIssueButton";
 import IssueDetail from "../_component/IssueDetail";
 import AssigneeSelect from "./AssigneeSelect";
-import { auth } from "@/auth";
-import { cache } from "react";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -15,8 +14,6 @@ const IssueDetailPage = async ({ params }: Props) => {
   const session = await auth();
   const { id } = await params;
   const issue = await fetchIssue(parseInt(id));
-
-  if (!issue) notFound();
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-4">
@@ -37,7 +34,7 @@ const IssueDetailPage = async ({ params }: Props) => {
 };
 
 const fetchIssue = cache((issueId: number) =>
-  prisma.issue.findUnique({
+  prisma.issue.findUniqueOrThrow({
     where: { id: issueId },
   }),
 );
