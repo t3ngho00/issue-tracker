@@ -1,15 +1,24 @@
 import IssueStatusBadge from "@/components/IssueStatusBadge";
-import React from "react";
+import { Card } from "@/components/ui/card";
 import ReactMarkdown from "react-markdown";
 import { Issue } from "../../generated/prisma/client";
-import { Card } from "@/components/ui/card";
+import IssueStatusSelect from "./IssueStatusSelect";
 
-const IssueDetail = ({ issue }: { issue: Issue }) => {
+interface Props {
+  issue: Issue;
+  canEdit?: boolean;
+}
+
+const IssueDetail = ({ issue, canEdit = false }: Props) => {
   return (
     <>
       <h1 className="text-3xl font-bold mb-4">{issue.title}</h1>
       <div className="flex items-center gap-4 mb-6">
-        <IssueStatusBadge status={issue.status} />
+        {canEdit ? (
+          <IssueStatusSelect issueId={issue.id} currentStatus={issue.status} />
+        ) : (
+          <IssueStatusBadge status={issue.status} />
+        )}
         <p className="text-sm text-muted-foreground">
           Created on {issue.createdAt.toDateString()}
         </p>

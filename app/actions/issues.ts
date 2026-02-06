@@ -53,15 +53,38 @@ export async function assignIssue(id: number, assignedToUserId: string | null) {
   await requireAuth();
 
   await prisma.issue.findUniqueOrThrow({
-    where: {id}
+    where: { id },
   });
 
   await prisma.issue.update({
-    where: {id},
+    where: { id },
     data: {
-      assignedToUserId
-    }
-  })
+      assignedToUserId,
+    },
+  });
+
+  return { success: true };
+}
+
+export async function updateIssueStatus(
+  id: number,
+  status: "OPEN" | "IN_PROGRESS" | "CLOSED",
+) {
+  await requireAuth();
+
+  await prisma.issue.findUniqueOrThrow({
+    where: { id },
+  });
+
+  await prisma.issue.update({
+    where: { id },
+    data: { status },
+  });
+
+  revalidatePath(`/issues/${id}`);
+  revalidatePath("/issues/list");
+
+  return { success: true };
 }
 
 export async function deleteIssue(id: number) {

@@ -18,7 +18,7 @@ const IssueDetailPage = async ({ params }: Props) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-4">
       <div className="lg:col-span-4">
-        <IssueDetail issue={issue} />
+        <IssueDetail issue={issue} canEdit={!!session} />
       </div>
       {session && (
         <div className="mt-4 lg:mt-0 lg:col-span-1">
