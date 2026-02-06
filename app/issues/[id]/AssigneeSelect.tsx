@@ -1,4 +1,5 @@
 "use client";
+import { assignIssue, updateIssue } from "@/app/actions/issues";
 import { Issue, User } from "@/app/generated/prisma/client";
 import {
   Select,
@@ -15,21 +16,20 @@ import { toast } from "sonner";
 
 const AssigneeSelect = ({ issue }: { issue: Issue }) => {
   const { data: users, isLoading, error } = useUser();
-  const assignIssue = (userId: string) => {
-    axios
-      .patch(`/api/issues/${issue.id}`, {
-        assignedToUserId: userId === "unassigned" ? null : userId,
-      })
-      .catch(() => {
-        toast.error("Changes could not be saved");
-      });
+  const onAssignIssue = async (userId: string) => {
+    try {
+      await assignIssue(issue.id, userId === "unassigned" ? null : userId);
+      toast.success("Updated assignee");
+    } catch {
+      toast.error("Change couldn't be made");
+    }
   };
   if (error) return null;
   if (isLoading) return <Skeleton className="h-4 w-full" />;
 
   return (
     <Select
-      onValueChange={assignIssue}
+      onValueChange={onAssignIssue}
       defaultValue={issue.assignedToUserId || "unassigned"}
     >
       <SelectTrigger className="w-full">

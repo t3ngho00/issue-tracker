@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { notFound } from "next/navigation";
 import dynamic from "next/dynamic";
 import IssueFormSkeleton from "../../_component/IssueFormSkeleton";
 
@@ -12,13 +11,12 @@ interface Props {
 }
 const page = async ({ params }: Props) => {
   const { id } = await params;
-  const issue = await prisma.issue.findUnique({
+  const issue = await prisma.issue.findUniqueOrThrow({
     where: {
       id: parseInt(id),
     },
   });
 
-  if (!issue) notFound();
   return <IssueForm issue={issue} />;
 };
 

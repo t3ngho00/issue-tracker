@@ -35,10 +35,9 @@ export async function updateIssue(id: number, data: PatchIssueData) {
   });
 
   if (validation.data.assignedToUserId) {
-    const user = await prisma.user.findUniqueOrThrow({
+    await prisma.user.findUniqueOrThrow({
       where: { id: validation.data.assignedToUserId },
     });
-    if (!user) throw new Error("Assigned user not found");
   }
 
   await prisma.issue.update({
@@ -48,6 +47,21 @@ export async function updateIssue(id: number, data: PatchIssueData) {
 
   revalidatePath("/issues/list");
   redirect("/issues/list");
+}
+
+export async function assignIssue(id: number, assignedToUserId: string | null) {
+  await requireAuth();
+
+  await prisma.issue.findUniqueOrThrow({
+    where: {id}
+  });
+
+  await prisma.issue.update({
+    where: {id},
+    data: {
+      assignedToUserId
+    }
+  })
 }
 
 export async function deleteIssue(id: number) {
